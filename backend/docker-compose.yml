@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  ha.api:
+    image: ${DOCKER_REGISTRY-}haapi
+    build:
+      context: .
+      dockerfile: src/HA.Api/Dockerfile
