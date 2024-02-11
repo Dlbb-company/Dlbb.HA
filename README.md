@@ -14,6 +14,6 @@
 - Статистика заказов, графики, финансы
 
 
-## 🏬 Канбан доска в **Project** "Dlbb.HA.Project"
+## 🏬 Канбан доска в **Project** "TPP.HA.Project"
 
 Стэк: asp.net 8, ef core, fluent validation, xunit, signalR, serilog, logstash, opensearch/sec, angular, bootstrap, angular material, scss, гэйсекпорн, ngrx, rxjs, automapper, clean architecura, DDD (на каком то уровне), MediatR, REST full api, docker, postgre, git, is4/keycloak/asp.net identity, nginx. Возможно: ci\cd, jenkins
