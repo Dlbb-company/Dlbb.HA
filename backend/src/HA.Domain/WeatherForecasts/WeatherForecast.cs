@@ -1,4 +1,4 @@
-namespace HA.Domain.Entities;
+namespace HA.Domain.WeatherForecasts;
 
 public class WeatherForecast
 {

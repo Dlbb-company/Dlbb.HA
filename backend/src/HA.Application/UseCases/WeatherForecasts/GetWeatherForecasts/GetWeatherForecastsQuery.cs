@@ -1,4 +1,4 @@
-﻿using HA.Domain.Entities;
+﻿using HA.Domain.WeatherForecasts;
 using MediatR;
 
 namespace HA.Application.UseCases.WeatherForecasts.GetWeatherForecasts;

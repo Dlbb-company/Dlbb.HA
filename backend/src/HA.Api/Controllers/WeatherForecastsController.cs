@@ -1,6 +1,6 @@
 using HA.Application.UseCases.WeatherForecasts.GetWeatherForecasts;
 using Microsoft.AspNetCore.Mvc;
-using HA.Domain.Entities;
+using HA.Domain.WeatherForecasts;
 
 namespace HA.Api.Controllers;
 
