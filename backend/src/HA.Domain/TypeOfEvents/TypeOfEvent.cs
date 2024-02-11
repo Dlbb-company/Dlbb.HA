@@ -13,6 +13,12 @@ public class TypeOfEvent : Entity
 
     public TypeOfEvent(string name, Money pricePerHour)
     {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Название не указано");
+
+        if(pricePerHour is null)
+            throw new ArgumentException("Цена в час не указана");
+
         Name = name;
         PricePerHour = pricePerHour;
     }

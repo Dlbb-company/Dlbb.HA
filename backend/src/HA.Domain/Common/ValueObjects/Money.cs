@@ -3,5 +3,18 @@
 /// <summary>
 /// Деньги.
 /// </summary>
-/// <param name="Value">Значение.</param>
-public record Money(decimal Value);
+public record Money
+{
+    public Money(decimal value)
+    {
+        if (value <= 0)
+            throw new ArgumentException("Значение не может быть меньше нуля");
+
+        Value = value;
+    }
+
+    /// <summary>
+    /// Значение.
+    /// </summary>
+    public decimal Value { get; init; }
+}
