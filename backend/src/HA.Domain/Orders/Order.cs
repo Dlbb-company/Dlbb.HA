@@ -1,8 +1,8 @@
 ﻿using HA.Domain.Common.Entites;
+using HA.Domain.Common.ValueObjects;
 using HA.Domain.Orders.Enums;
 using HA.Domain.Orders.Events;
 using HA.Domain.Orders.ValueObjects;
-using HA.Domain.TypeOfEvents;
 
 namespace HA.Domain.Orders;
 
@@ -17,31 +17,31 @@ public class Order : Entity, IAggregateRoot
     /// <summary>
     /// Заказ.
     /// </summary>
-    /// <param name="eventDate">Дата мероприятия.</param>
-    /// <param name="place">Месторасположения.</param>
-    public Order(Guid customerId, DateTime eventDate, Place place)
+    public Order(Guid customerId, Guid typeOfEventId, TimePeriod plannedTimePeriod, Place place)
     {
-        EventDate = eventDate;
+        CustomerId = customerId;
+        PlannedTimePeriod = plannedTimePeriod;
         Place = place;
+        TypeOfEventId = typeOfEventId;
         Status = OrderStatus.Unprocessed;
 
         AddDomainEvent(new OrderCreatedDomainEvent(this, customerId));
     }
 
     /// <summary>
-    /// Дата мероприятия.
+    /// Планируемый временной период мероприятия.
     /// </summary>
-    public DateTime EventDate { get; private set; }
+    public TimePeriod PlannedTimePeriod { get; private set; } = null!;
+
+    /// <summary>
+    /// Фактический временной период мероприятия.
+    /// </summary>
+    public TimePeriod ActualTimePeriod { get; private set; } = null!;
 
     /// <summary>
     /// Месторасположения.
     /// </summary>
     public Place Place { get; private set; } = null!;
-
-    /// <summary>
-    /// Тип мероприятия.
-    /// </summary>
-    public TypeOfEvent TypeOfEvent { get; private set; } = null!;
 
     /// <summary>
     /// Гости.
@@ -59,6 +59,26 @@ public class Order : Entity, IAggregateRoot
     public OrderStatus Status { get; set; }
 
     /// <summary>
+    /// Причина отмены.
+    /// </summary>
+    public string? CancelledReason { get; private set; }
+
+    /// <summary>
+    /// Идентификатор заказчика.
+    /// </summary>
+    public Guid CustomerId { get; set; }
+
+    /// <summary>
+    /// Идентификатор типа мероприятия.
+    /// </summary>
+    public Guid TypeOfEventId { get; private set; }
+
+    /// <summary>
+    /// Чаевые.
+    /// </summary>
+    public Money Tips { get; set; }
+
+    /// <summary>
     /// Перезаписать план мероприятия.
     /// </summary>
     /// <param name="plan">План.</param>
@@ -73,36 +93,94 @@ public class Order : Entity, IAggregateRoot
         => Guests = guests.ToList();
 
     /// <summary>
-    /// Изменить дату мероприятия.
+    /// Изменить временной период мероприятия.
     /// </summary>
-    /// <param name="newEventDate">Новая дата мероприятия.</param>
-    public void ChangeEventDate(DateTime newEventDate)
-        => EventDate = newEventDate;
+    /// <param name="newTimePeriod">Новый временной период.</param>
+    public void ChangeEventTimePeriod(TimePeriod newTimePeriod)
+        => PlannedTimePeriod = newTimePeriod;
 
     /// <summary>
     /// Подтвердить.
     /// </summary>
-    public void Confirm()
+    public bool Confirm()
     {
+        if (Status != OrderStatus.Unprocessed)
+            return false;
+
         Status = OrderStatus.Confirmed;
         AddDomainEvent(new OrderConfirmedDomainEvent(this));
+
+        return true;
     }
 
     /// <summary>
     /// Отменить.
     /// </summary>
-    public void Cancel()
+    public bool Cancel(string? reason)
     {
+        if (Status is not OrderStatus.Unprocessed or OrderStatus.Confirmed)
+            return false;
+
+        CancelledReason = reason;
         Status = OrderStatus.Canceled;
         AddDomainEvent(new OrderCancelledDomainEvent(this));
+
+        return true;
     }
 
     /// <summary>
     /// Завершить.
     /// </summary>
-    public void Complete()
+    public bool Complete()
     {
+        if (Status != OrderStatus.Confirmed)
+            return false;
+        
         Status = OrderStatus.Completed;
         AddDomainEvent(new OrderCompletedDomainEvent(this));
+
+        return true;
+    }
+
+    /// <summary>
+    /// Билдер завершения заказа.
+    /// </summary>
+    public class CompleteOrderBuilder
+    {
+        private readonly Order order;
+
+        public CompleteOrderBuilder(Order order)
+        {
+            if (order.Status != OrderStatus.Confirmed)
+                throw new ArgumentException($"Заказ должен быть в статусе {nameof(OrderStatus.Confirmed)}");
+
+            this.order = order;
+        }
+
+        /// <summary>
+        /// С фактической датой проведения.
+        /// </summary>
+        /// <param name="actualTimePeriod">Фактическая дата проведения.</param>
+        public CompleteOrderBuilder WithActualTimePeriod(TimePeriod actualTimePeriod)
+        {
+            order.ActualTimePeriod = actualTimePeriod;
+            return this;
+        }
+
+        /// <summary>
+        /// С чаевыми.
+        /// </summary>
+        /// <param name="tips">Чаевые.</param>
+        public CompleteOrderBuilder WithTips(Money tips)
+        {
+            order.Tips = tips;
+            return this;
+        }
+
+        public Order Build()
+        {
+            order.Complete();
+            return order;
+        }
     }
 }

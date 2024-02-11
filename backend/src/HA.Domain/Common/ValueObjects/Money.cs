@@ -1,4 +1,4 @@
-﻿namespace HA.Domain.TypeOfEvents.ValueObjects;
+﻿namespace HA.Domain.Common.ValueObjects;
 
 /// <summary>
 /// Деньги.

@@ -1,5 +1,5 @@
 ﻿using HA.Domain.Common.Entites;
-using HA.Domain.TypeOfEvents.ValueObjects;
+using HA.Domain.Common.ValueObjects;
 
 namespace HA.Domain.TypeOfEvents;
 
