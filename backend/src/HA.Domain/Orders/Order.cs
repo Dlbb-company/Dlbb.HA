@@ -154,68 +154,16 @@ public class Order : Entity, IAggregateRoot
     }
 
     /// <summary>
-    /// Создать билдер завершения заказа.
+    /// Завершить.
     /// </summary>
-    public CompleteOrderBuilder CreateCompleteOrderBuilder()
-        => new (this);
-
-    /// <summary>
-    /// Билдер завершения заказа.
-    /// </summary>
-    public class CompleteOrderBuilder
+    public bool Complete()
     {
-        private readonly Order _order;
-        private readonly List<Guid> _addedFileIds = [];
+        if (Status != OrderStatus.Confirmed)
+            return false;
 
-        public CompleteOrderBuilder(Order order)
-        {
-            if (order.Status != OrderStatus.Confirmed)
-                throw new ArgumentException($"Заказ должен быть в статусе {nameof(OrderStatus.Confirmed)}");
+        Status = OrderStatus.Completed;
+        AddDomainEvent(new OrderCompletedDomainEvent(this));
 
-            this._order = order;
-        }
-
-        /// <summary>
-        /// С фактической датой проведения.
-        /// </summary>
-        /// <param name="actualTimePeriod">Фактическая дата проведения.</param>
-        public CompleteOrderBuilder WithActualTimePeriod(TimePeriod actualTimePeriod)
-        {
-            _order.ActualTimePeriod = actualTimePeriod;
-            return this;
-        }
-
-        /// <summary>
-        /// С чаевыми.
-        /// </summary>
-        /// <param name="tips">Чаевые.</param>
-        public CompleteOrderBuilder WithTips(Money tips)
-        {
-            _order.Tips = tips;
-            return this;
-        }
-
-        /// <summary>
-        /// С файлами.
-        /// </summary>
-        /// <param name="fileIds">Идентификаторы файлов.</param>
-        public CompleteOrderBuilder WithFiles(params Guid[] fileIds)
-        {
-            _addedFileIds.AddRange(fileIds);
-            return this;
-        }
-
-        /// <summary>
-        /// Завершить создание заказа с статусом Completed.
-        /// </summary>
-        public Order Complete()
-        {
-            var distinctAddedFileIds = _addedFileIds.Distinct().ToArray();
-            _order.Status = OrderStatus.Completed;
-            _order.AddFiles(distinctAddedFileIds);
-            _order.AddDomainEvent(new OrderCompletedDomainEvent(_order));
-
-            return _order;
-        }
+        return true;
     }
 }
